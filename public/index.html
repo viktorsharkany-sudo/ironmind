@@ -111,7 +111,7 @@
       });
       const data = await res.json();
       document.getElementById('typing')?.remove();
-      addMsg('ai', data.reply);
+      addMsg('ai', data.reply || data.error || 'Немає відповіді');
       history.push({ role: 'assistant', content: data.reply });
     } catch(e) {
       document.getElementById('typing')?.remove();
