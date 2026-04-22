@@ -29,8 +29,7 @@ app.post('/chat', async (req, res) => {
     });
 
     const data = await response.json();
-    console.log('API response:', JSON.stringify(data));
-res.json({ reply: data.content?.[0]?.text || data.error?.message || JSON.stringify(data) });
+    res.json({ reply: data.content[0].text });
   } catch (err) {
     res.status(500).json({ error: 'Помилка сервера' });
   }
