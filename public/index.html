@@ -14,7 +14,7 @@
     .status { font-size: 12px; color: #666; margin-top: 4px; }
     .dot { display: inline-block; width: 6px; height: 6px; background: #1D9E75; border-radius: 50%; margin-right: 5px; animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .lang-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1.5rem; }
+    .lang-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1.5rem; overflow-y: auto; }
     .lang-title { font-size: 16px; color: #aaa; text-align: center; }
     .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
     .lang-btn { padding: 12px; border-radius: 10px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #f0f0f0; cursor: pointer; font-size: 14px; text-align: center; transition: all 0.15s; }
@@ -35,6 +35,9 @@
     .typing span:nth-child(2) { animation-delay: 0.2s; }
     .typing span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+    .sugs { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; }
+    .sug { font-size: 12px; padding: 5px 11px; border-radius: 20px; border: 1px solid #2a2a2a; background: transparent; color: #888; cursor: pointer; transition: all 0.15s; }
+    .sug:hover { border-color: #1D9E75; color: #1D9E75; }
     .input-row { display: flex; gap: 8px; padding: 0.75rem 0 0.5rem; }
     input { flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; color: #f0f0f0; border-radius: 10px; padding: 0 14px; height: 42px; font-size: 14px; outline: none; transition: border 0.15s; }
     input:focus { border-color: #1D9E75; }
@@ -62,11 +65,24 @@
       <button class="lang-btn" onclick="selectLang('Polish')">🇵🇱 Polski</button>
       <button class="lang-btn" onclick="selectLang('Romanian')">🇷🇴 Română</button>
       <button class="lang-btn" onclick="selectLang('Spanish')">🇪🇸 Español</button>
+      <button class="lang-btn" onclick="selectLang('French')">🇫🇷 Français</button>
+      <button class="lang-btn" onclick="selectLang('Italian')">🇮🇹 Italiano</button>
+      <button class="lang-btn" onclick="selectLang('Portuguese')">🇵🇹 Português</button>
+      <button class="lang-btn" onclick="selectLang('Turkish')">🇹🇷 Türkçe</button>
+      <button class="lang-btn" onclick="selectLang('Arabic')">🇸🇦 العربية</button>
+      <button class="lang-btn" onclick="selectLang('Chinese')">🇨🇳 中文</button>
+      <button class="lang-btn" onclick="selectLang('Japanese')">🇯🇵 日本語</button>
+      <button class="lang-btn" onclick="selectLang('Korean')">🇰🇷 한국어</button>
+      <button class="lang-btn" onclick="selectLang('Hindi')">🇮🇳 हिंदी</button>
+      <button class="lang-btn" onclick="selectLang('Czech')">🇨🇿 Čeština</button>
+      <button class="lang-btn" onclick="selectLang('Slovak')">🇸🇰 Slovenčina</button>
+      <button class="lang-btn" onclick="selectLang('Dutch')">🇳🇱 Nederlands</button>
     </div>
   </div>
 
   <div class="chat-screen" id="chatScreen">
     <div class="messages" id="msgs"></div>
+    <div class="sugs" id="sugs"></div>
     <div class="input-row">
       <input id="inp" type="text" placeholder="Type your message..." onkeydown="if(event.key==='Enter')send()" />
       <button class="send" id="btn" onclick="send()">↑</button>
@@ -79,6 +95,42 @@
   const inp = document.getElementById('inp');
   const btn = document.getElementById('btn');
   let history = [];
+
+  const suggestions = {
+    'English': ['Lose weight', 'Gain muscle', 'Build strength', 'Beginner program'],
+    'Ukrainian': ['Схуднути', 'Набрати масу', 'Розвинути силу', 'Програма новачка'],
+    'Hungarian': ['Fogyni', 'Izmot növelni', 'Erőt fejleszteni', 'Kezdő program'],
+    'Russian': ['Похудеть', 'Набрать массу', 'Развить силу', 'Программа новичка'],
+    'German': ['Abnehmen', 'Muskeln aufbauen', 'Kraft aufbauen', 'Anfänger Programm'],
+    'Polish': ['Schudnąć', 'Nabrać masy', 'Rozwijać siłę', 'Program dla początkujących'],
+    'Romanian': ['Slăbit', 'Masa musculară', 'Forță', 'Program începător'],
+    'Spanish': ['Perder peso', 'Ganar músculo', 'Desarrollar fuerza', 'Programa principiante'],
+    'French': ['Perdre du poids', 'Prendre du muscle', 'Développer la force', 'Programme débutant'],
+    'Italian': ['Perdere peso', 'Guadagnare muscoli', 'Sviluppare forza', 'Programma principiante'],
+    'Portuguese': ['Perder peso', 'Ganhar músculo', 'Desenvolver força', 'Programa iniciante'],
+    'Turkish': ['Kilo vermek', 'Kas kazanmak', 'Güç geliştirmek', 'Başlangıç programı'],
+    'Arabic': ['إنقاص الوزن', 'بناء العضلات', 'تطوير القوة', 'برنامج المبتدئين'],
+    'Chinese': ['减肥', '增肌', '增强力量', '新手计划'],
+    'Japanese': ['体重を減らす', '筋肉をつける', '筋力をつける', '初心者プログラム'],
+    'Korean': ['체중 감량', '근육 증가', '근력 개발', '초보자 프로그램'],
+    'Hindi': ['वजन कम करना', 'मांसपेशी बनाना', 'शक्ति विकसित करना', 'शुरुआती कार्यक्रम'],
+    'Czech': ['Zhubnout', 'Nabrat svaly', 'Rozvíjet sílu', 'Program pro začátečníky'],
+    'Slovak': ['Schudnúť', 'Nabrať svaly', 'Rozvíjať silu', 'Program pre začiatočníkov'],
+    'Dutch': ['Afvallen', 'Spieren opbouwen', 'Kracht opbouwen', 'Beginners programma'],
+  };
+
+  function showSuggestions(lang) {
+    const sugsDiv = document.getElementById('sugs');
+    sugsDiv.innerHTML = '';
+    const opts = suggestions[lang] || suggestions['English'];
+    opts.forEach(opt => {
+      const b = document.createElement('button');
+      b.className = 'sug';
+      b.textContent = opt;
+      b.onclick = () => { sugsDiv.innerHTML = ''; inp.value = opt; send(); };
+      sugsDiv.appendChild(b);
+    });
+  }
 
   function addMsg(role, text) {
     const wrap = document.createElement('div');
@@ -101,6 +153,7 @@
     document.getElementById('langScreen').style.display = 'none';
     const chat = document.getElementById('chatScreen');
     chat.style.display = 'flex';
+    showSuggestions(langName);
 
     const greeting = 'User selected language: ' + langName + '. Greet them warmly in ' + langName + ' and start collecting their fitness info. First ask their age and gender.';
     history.push({ role: 'user', content: greeting });
@@ -127,6 +180,7 @@
     if (!text) return;
     inp.value = '';
     btn.disabled = true;
+    document.getElementById('sugs').innerHTML = '';
     addMsg('user', text);
     history.push({ role: 'user', content: text });
     addTyping();
