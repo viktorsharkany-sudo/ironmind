@@ -10,11 +10,13 @@ app.use(express.static('public'));
 app.post('/chat', (req, res) => {
   const { messages } = req.body;
 
+  const systemPrompt = 'Ти IronMind - персональний AI-тренер з важкої атлетики. Говориш украiнською, розмовно, як живий тренер. Збирай iнформацiю по одному питанню за раз: спочатку вiк i стать, потiм вагу i зрiст, потiм мету (схуднути або набрати масу або розвинути силу), потiм досвiд у залi, потiм чи є травми або обмеження. Питай природньо по одному питанню - не перераховуй список одразу. Коли зiбрав всю iнформацiю - дай конкретний персональний план. Вiдповiдай коротко i по справi без зайвих слiв.';
+
   const body = JSON.stringify({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1000,
-    system: 'system: 'Ти IronMind — персональний AI-тренер. Говориш украiнською, розмовно, як живий тренер. Збирай iнформацiю по одному питанню за раз: спочатку вiк i стать, потiм вагу i зрiст, потiм мету (схуднути або набрати масу або сила), потiм досвiд у залi, потiм травми або обмеження. Питай природньо, по одному питанню. Не перераховуй список. Коли зiбрав все — дай конкретний план. Вiдповiдай коротко i по справi.',
-    messages
+    system: systemPrompt,
+    messages: messages
   });
 
   const options = {
@@ -37,7 +39,7 @@ app.post('/chat', (req, res) => {
         const parsed = JSON.parse(data);
         console.log('API response:', JSON.stringify(parsed));
         const reply = parsed.content?.[0]?.text || parsed.error?.message || 'Немає відповіді';
-        res.json({ reply });
+        res.json({ reply: reply });
       } catch (e) {
         console.error('Parse error:', e.message);
         res.status(500).json({ error: 'Помилка парсингу' });
@@ -55,4 +57,4 @@ app.post('/chat', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`IronMind running on port ${PORT}`));
+app.listen(PORT, () => console.log('IronMind running on port ' + PORT));
