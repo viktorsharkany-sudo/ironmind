@@ -7,44 +7,66 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem; }
-    .app { width: 100%; max-width: 480px; display: flex; flex-direction: column; height: 90vh; max-height: 700px; }
-    .header { text-align: center; padding: 1.2rem 0 1rem; }
+    .app { width: 100%; max-width: 480px; display: flex; flex-direction: column; min-height: 90vh; max-height: 780px; }
+    .header { text-align: center; padding: 1.2rem 0 0.8rem; flex-shrink: 0; }
     .logo { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; color: #fff; }
     .logo span { color: #1D9E75; }
     .status { font-size: 12px; color: #666; margin-top: 4px; }
     .dot { display: inline-block; width: 6px; height: 6px; background: #1D9E75; border-radius: 50%; margin-right: 5px; animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .lang-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1.5rem; overflow-y: auto; }
-    .lang-title { font-size: 16px; color: #aaa; text-align: center; }
+    .screen { flex: 1; display: none; flex-direction: column; }
+    .screen.active { display: flex; }
+    .lang-screen { justify-content: center; align-items: center; gap: 1.5rem; overflow-y: auto; }
+    .lang-title { font-size: 15px; color: #aaa; text-align: center; }
     .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-    .lang-btn { padding: 12px; border-radius: 10px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #f0f0f0; cursor: pointer; font-size: 14px; text-align: center; transition: all 0.15s; }
+    .lang-btn { padding: 11px; border-radius: 10px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #f0f0f0; cursor: pointer; font-size: 13px; text-align: center; transition: all 0.15s; }
     .lang-btn:hover { border-color: #1D9E75; color: #1D9E75; background: #0d1f18; }
-    .chat-screen { flex: 1; display: none; flex-direction: column; }
+    .quiz-screen { justify-content: space-between; padding: 0.5rem 0; }
+    .progress-bar { height: 3px; background: #1a1a1a; border-radius: 2px; margin-bottom: 1.5rem; flex-shrink: 0; }
+    .progress-fill { height: 100%; background: #1D9E75; border-radius: 2px; transition: width 0.4s ease; }
+    .question-block { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1.2rem; overflow-y: auto; }
+    .step-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+    .question-text { font-size: 20px; font-weight: 500; line-height: 1.4; color: #fff; }
+    .question-sub { font-size: 13px; color: #666; line-height: 1.5; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .opt-btn { padding: 12px; border-radius: 10px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #ccc; cursor: pointer; font-size: 13px; text-align: center; transition: all 0.15s; }
+    .opt-btn:hover, .opt-btn.selected { border-color: #1D9E75; color: #1D9E75; background: #0d1f18; }
+    .quiz-input { background: #1a1a1a; border: 1px solid #2a2a2a; color: #f0f0f0; border-radius: 10px; padding: 12px 14px; font-size: 15px; outline: none; transition: border 0.15s; width: 100%; }
+    .quiz-input:focus { border-color: #1D9E75; }
+    .quiz-input::placeholder { color: #444; }
+    .fat-link { color: #1D9E75; cursor: pointer; font-size: 12px; margin-top: 4px; display: inline-block; text-decoration: underline; }
+    .fat-info { background: #111; border: 1px solid #333; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #aaa; line-height: 1.6; display: none; margin-top: 4px; }
+    .fat-info.show { display: block; }
+    .nav-row { display: flex; gap: 10px; flex-shrink: 0; padding-top: 1rem; }
+    .back-btn { padding: 0 16px; height: 44px; border-radius: 10px; border: 1px solid #2a2a2a; background: transparent; color: #666; cursor: pointer; font-size: 14px; }
+    .back-btn:hover { color: #fff; border-color: #444; }
+    .next-btn { flex: 1; height: 44px; border-radius: 10px; border: none; background: #1D9E75; color: #fff; cursor: pointer; font-size: 15px; font-weight: 500; }
+    .next-btn:disabled { opacity: 0.3; cursor: default; }
+    .chat-screen { flex-direction: column; }
     .messages { flex: 1; overflow-y: auto; padding: 0.5rem 0; display: flex; flex-direction: column; gap: 10px; }
     .messages::-webkit-scrollbar { width: 4px; }
     .messages::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
     .msg { display: flex; gap: 8px; align-items: flex-end; }
     .msg.user { flex-direction: row-reverse; }
-    .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
     .avatar.ai { background: #0d3d2a; color: #1D9E75; }
     .avatar.user { background: #1e1a3a; color: #7f77dd; }
-    .bubble { max-width: 78%; padding: 9px 13px; border-radius: 16px; font-size: 14px; line-height: 1.55; }
-    .msg.ai .bubble { background: #1a1a1a; border: 1px solid #2a2a2a; border-bottom-left-radius: 4px; color: #e8e8e8; }
+    .bubble { max-width: 80%; padding: 9px 13px; border-radius: 16px; font-size: 14px; line-height: 1.6; }
+    .msg.ai .bubble { background: #1a1a1a; border: 1px solid #2a2a2a; border-bottom-left-radius: 4px; color: #e8e8e8; white-space: pre-wrap; }
     .msg.user .bubble { background: #0d3d2a; color: #a8e6cf; border-bottom-right-radius: 4px; }
-    .typing span { display: inline-block; width: 6px; height: 6px; background: #444; border-radius: 50%; animation: bounce 1.2s infinite; margin: 0 2px; }
+    .typing span { display: inline-block; width: 5px; height: 5px; background: #444; border-radius: 50%; animation: bounce 1.2s infinite; margin: 0 2px; }
     .typing span:nth-child(2) { animation-delay: 0.2s; }
     .typing span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
-    .sugs { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; }
-    .sug { font-size: 12px; padding: 5px 11px; border-radius: 20px; border: 1px solid #2a2a2a; background: transparent; color: #888; cursor: pointer; transition: all 0.15s; }
+    .sugs { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0; flex-shrink: 0; }
+    .sug { font-size: 12px; padding: 5px 11px; border-radius: 20px; border: 1px solid #2a2a2a; background: transparent; color: #888; cursor: pointer; }
     .sug:hover { border-color: #1D9E75; color: #1D9E75; }
-    .input-row { display: flex; gap: 8px; padding: 0.75rem 0 0.5rem; }
-    input { flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; color: #f0f0f0; border-radius: 10px; padding: 0 14px; height: 42px; font-size: 14px; outline: none; transition: border 0.15s; }
-    input:focus { border-color: #1D9E75; }
-    input::placeholder { color: #444; }
-    button.send { width: 42px; height: 42px; background: #1D9E75; border: none; border-radius: 10px; color: #fff; font-size: 18px; cursor: pointer; flex-shrink: 0; transition: opacity 0.15s; display: flex; align-items: center; justify-content: center; }
-    button.send:hover { opacity: 0.85; }
-    button.send:disabled { opacity: 0.35; cursor: default; }
+    .input-row { display: flex; gap: 8px; padding: 0.5rem 0; flex-shrink: 0; }
+    .chat-input { flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; color: #f0f0f0; border-radius: 10px; padding: 0 14px; height: 42px; font-size: 14px; outline: none; }
+    .chat-input:focus { border-color: #1D9E75; }
+    .chat-input::placeholder { color: #444; }
+    .send-btn { width: 42px; height: 42px; background: #1D9E75; border: none; border-radius: 10px; color: #fff; font-size: 18px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .send-btn:disabled { opacity: 0.35; cursor: default; }
   </style>
 </head>
 <body>
@@ -54,7 +76,7 @@
     <div class="status"><span class="dot"></span>Trainer online</div>
   </div>
 
-  <div class="lang-screen" id="langScreen">
+  <div class="screen lang-screen active" id="langScreen">
     <div class="lang-title">Choose your language / Оберіть мову</div>
     <div class="lang-grid">
       <button class="lang-btn" onclick="selectLang('English')">🇬🇧 English</button>
@@ -80,128 +102,210 @@
     </div>
   </div>
 
-  <div class="chat-screen" id="chatScreen">
+  <div class="screen quiz-screen" id="quizScreen">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="question-block" id="questionBlock"></div>
+    <div class="nav-row">
+      <button class="back-btn" id="backBtn" onclick="prevStep()">←</button>
+      <button class="next-btn" id="nextBtn" onclick="nextStep()">Next</button>
+    </div>
+  </div>
+
+  <div class="screen chat-screen" id="chatScreen">
     <div class="messages" id="msgs"></div>
     <div class="sugs" id="sugs"></div>
     <div class="input-row">
-      <input id="inp" type="text" placeholder="Type your message..." onkeydown="if(event.key==='Enter')send()" />
-      <button class="send" id="btn" onclick="send()">↑</button>
+      <input class="chat-input" id="inp" type="text" placeholder="Ask your trainer..." onkeydown="if(event.key==='Enter')send()" />
+      <button class="send-btn" id="sendBtn" onclick="send()">↑</button>
     </div>
   </div>
 </div>
 
 <script>
-  const msgs = document.getElementById('msgs');
-  const inp = document.getElementById('inp');
-  const btn = document.getElementById('btn');
-  let history = [];
+var lang = 'English';
+var step = 0;
+var ans = {};
+var hist = [];
 
-  const suggestions = {
-    'English': ['Lose weight', 'Gain muscle', 'Build strength', 'Beginner program'],
-    'Ukrainian': ['Схуднути', 'Набрати масу', 'Розвинути силу', 'Програма новачка'],
-    'Hungarian': ['Fogyni', 'Izmot növelni', 'Erőt fejleszteni', 'Kezdő program'],
-    'Russian': ['Похудеть', 'Набрать массу', 'Развить силу', 'Программа новичка'],
-    'German': ['Abnehmen', 'Muskeln aufbauen', 'Kraft aufbauen', 'Anfänger Programm'],
-    'Polish': ['Schudnąć', 'Nabrać masy', 'Rozwijać siłę', 'Program dla początkujących'],
-    'Romanian': ['Slăbit', 'Masa musculară', 'Forță', 'Program începător'],
-    'Spanish': ['Perder peso', 'Ganar músculo', 'Desarrollar fuerza', 'Programa principiante'],
-    'French': ['Perdre du poids', 'Prendre du muscle', 'Développer la force', 'Programme débutant'],
-    'Italian': ['Perdere peso', 'Guadagnare muscoli', 'Sviluppare forza', 'Programma principiante'],
-    'Portuguese': ['Perder peso', 'Ganhar músculo', 'Desenvolver força', 'Programa iniciante'],
-    'Turkish': ['Kilo vermek', 'Kas kazanmak', 'Güç geliştirmek', 'Başlangıç programı'],
-    'Arabic': ['إنقاص الوزن', 'بناء العضلات', 'تطوير القوة', 'برنامج المبتدئين'],
-    'Chinese': ['减肥', '增肌', '增强力量', '新手计划'],
-    'Japanese': ['体重を減らす', '筋肉をつける', '筋力をつける', '初心者プログラム'],
-    'Korean': ['체중 감량', '근육 증가', '근력 개발', '초보자 프로그램'],
-    'Hindi': ['वजन कम करना', 'मांसपेशी बनाना', 'शक्ति विकसित करना', 'शुरुआती कार्यक्रम'],
-    'Czech': ['Zhubnout', 'Nabrat svaly', 'Rozvíjet sílu', 'Program pro začátečníky'],
-    'Slovak': ['Schudnúť', 'Nabrať svaly', 'Rozvíjať silu', 'Program pre začiatočníkov'],
-    'Dutch': ['Afvallen', 'Spieren opbouwen', 'Kracht opbouwen', 'Beginners programma'],
-  };
-
-  function showSuggestions(lang) {
-    const sugsDiv = document.getElementById('sugs');
-    sugsDiv.innerHTML = '';
-    const opts = suggestions[lang] || suggestions['English'];
-    opts.forEach(opt => {
-      const b = document.createElement('button');
-      b.className = 'sug';
-      b.textContent = opt;
-      b.onclick = () => { sugsDiv.innerHTML = ''; inp.value = opt; send(); };
-      sugsDiv.appendChild(b);
-    });
+var TR = {
+  English: {
+    next:'Next', start:'Get my plan!',
+    fatLink:"I don't know — how to find out?",
+    fatInfo:"Body fat % shows how much of your weight is fat vs muscle. Easy home method: measure your waist with a tape at navel level. For men: fat% = (waist cm - height cm x 0.5) x 0.74. Or download free app 'Body Fat Calculator'. Reference: Athletic 10-15%, Average 18-25%, Above average 25%+",
+    steps:[
+      {key:'gender',label:'Step 1 of 6',q:'What is your gender?',type:'opts',opts:['Male','Female']},
+      {key:'age',label:'Step 2 of 6',q:'How old are you?',type:'num',ph:'e.g. 27'},
+      {key:'body',label:'Step 3 of 6',q:'Your weight and height?',type:'dbl',p1:'Weight (kg)',p2:'Height (cm)'},
+      {key:'fat',label:'Step 4 of 6',q:'What is your body fat %?',sub:"Don't know? No problem!",type:'fat',ph:'e.g. 18'},
+      {key:'goal',label:'Step 5 of 6',q:'What is your main goal?',type:'opts',opts:['Lose fat','Gain muscle','Build strength','General fitness']},
+      {key:'exp',label:'Step 6 of 6',q:'Gym experience?',type:'opts',opts:['Beginner (0-6 mo)','Intermediate (6mo-2yr)','Advanced (2+ yr)','Returning after break']}
+    ],
+    sugs:['Give me a workout plan','What should I eat?','How much protein do I need?','Best exercises for my goal']
+  },
+  Ukrainian: {
+    next:'Далі', start:'Отримати план!',
+    fatLink:'Не знаю — як дізнатись?',
+    fatInfo:'Відсоток жиру показує скільки твоєї ваги це жир а скільки м\'язи. Простий спосіб вдома: виміряй талію сантиметровою стрічкою на рівні пупа. Для чоловіків: відсоток жиру = (талія в см мінус зріст в см помножений на 0.5) помножений на 0.74. Або скачай безкоштовний додаток Body Fat Calculator. Орієнтири: Атлетичний 10-15 відсотків, Середній 18-25 відсотків, Вище норми понад 25 відсотків',
+    steps:[
+      {key:'gender',label:'Крок 1 з 6',q:'Яка твоя стать?',type:'opts',opts:['Чоловік','Жінка']},
+      {key:'age',label:'Крок 2 з 6',q:'Скільки тобі років?',type:'num',ph:'наприклад 27'},
+      {key:'body',label:'Крок 3 з 6',q:'Твоя вага та зріст?',type:'dbl',p1:'Вага (кг)',p2:'Зріст (см)'},
+      {key:'fat',label:'Крок 4 з 6',q:'Який твій відсоток жиру?',sub:'Не знаєш? Не проблема!',type:'fat',ph:'наприклад 18'},
+      {key:'goal',label:'Крок 5 з 6',q:'Яка твоя головна мета?',type:'opts',opts:['Схуднути','Набрати масу','Розвинути силу','Загальна форма']},
+      {key:'exp',label:'Крок 6 з 6',q:'Досвід у залі?',type:'opts',opts:['Новачок (0-6 міс)','Середній (6міс-2р)','Досвідчений (2+ роки)','Повертаюсь після паузи']}
+    ],
+    sugs:['Дай план тренувань','Що мені їсти?','Скільки білка потрібно?','Кращі вправи для моєї мети']
+  },
+  Hungarian: {
+    next:'Tovább', start:'Tervemet kérem!',
+    fatLink:'Nem tudom — hogyan derítsem ki?',
+    fatInfo:'A testzsír% megmutatja hogy a súlyod mekkora hányada zsír. Otthoni módszer: mérőszalaggal mérd meg a derekadat a köldök magasságában. Férfiaknál: zsír% = (derék cm - magasság cm x 0.5) x 0.74. Vagy töltsd le a Body Fat Calculator appot. Sportos 10-15%, Átlagos 18-25%, Átlag feletti 25%+',
+    steps:[
+      {key:'gender',label:'1/6 lépés',q:'Mi a nemed?',type:'opts',opts:['Férfi','Nő']},
+      {key:'age',label:'2/6 lépés',q:'Hány éves vagy?',type:'num',ph:'pl. 27'},
+      {key:'body',label:'3/6 lépés',q:'Súlyod és magasságod?',type:'dbl',p1:'Súly (kg)',p2:'Magasság (cm)'},
+      {key:'fat',label:'4/6 lépés',q:'Mennyi a testzsír%-od?',sub:'Nem tudod? Semmi gond!',type:'fat',ph:'pl. 18'},
+      {key:'goal',label:'5/6 lépés',q:'Mi a fő célod?',type:'opts',opts:['Fogyás','Izomnövelés','Erőfejlesztés','Általános fittség']},
+      {key:'exp',label:'6/6 lépés',q:'Edzőtermi tapasztalat?',type:'opts',opts:['Kezdő (0-6 hónap)','Középhaladó (6hó-2év)','Haladó (2+ év)','Visszatérő']}
+    ],
+    sugs:['Edzéstervet kérek','Mit egyek?','Mennyi fehérje kell?','Legjobb gyakorlatok']
   }
+};
 
-  function addMsg(role, text) {
-    const wrap = document.createElement('div');
-    wrap.className = 'msg ' + role;
-    wrap.innerHTML = '<div class="avatar ' + role + '">' + (role === 'ai' ? 'IM' : 'YOU') + '</div><div class="bubble">' + text + '</div>';
-    msgs.appendChild(wrap);
-    msgs.scrollTop = msgs.scrollHeight;
+function tr(){ return TR[lang]||TR['English']; }
+
+function selectLang(l){
+  lang=l;
+  document.getElementById('langScreen').classList.remove('active');
+  document.getElementById('quizScreen').classList.add('active');
+  step=0; ans={};
+  render();
+}
+
+function render(){
+  var t=tr(), s=t.steps[step], total=t.steps.length;
+  document.getElementById('progressFill').style.width=(step/total*100)+'%';
+  document.getElementById('backBtn').style.visibility=step===0?'hidden':'visible';
+  document.getElementById('nextBtn').textContent=step===total-1?t.start:t.next;
+  var h='<div class="step-label">'+s.label+'</div><div class="question-text">'+s.q+'</div>';
+  if(s.sub) h+='<div class="question-sub">'+s.sub+'</div>';
+  if(s.type==='opts'){
+    h+='<div class="options-grid">';
+    s.opts.forEach(function(o){ h+='<button class="opt-btn'+(ans[s.key]===o?' selected':'')+'" onclick="pick(\''+s.key+'\',\''+o.replace(/'/g,'&#39;')+'\',this)">'+o+'</button>'; });
+    h+='</div>';
+  } else if(s.type==='num'){
+    h+='<input class="quiz-input" type="number" placeholder="'+s.ph+'" value="'+(ans[s.key]||'')+'" oninput="ans[\''+s.key+'\']=this.value;upd()" />';
+  } else if(s.type==='dbl'){
+    h+='<input class="quiz-input" type="number" placeholder="'+s.p1+'" value="'+(ans.w||'')+'" oninput="ans.w=this.value;upd()" style="margin-bottom:8px"/>';
+    h+='<input class="quiz-input" type="number" placeholder="'+s.p2+'" value="'+(ans.h||'')+'" oninput="ans.h=this.value;upd()" />';
+  } else if(s.type==='fat'){
+    h+='<input class="quiz-input" type="number" placeholder="'+s.ph+'" value="'+(ans.fat&&ans.fat!=='?'?ans.fat:'')+'" oninput="ans.fat=this.value;upd()" />';
+    h+='<span class="fat-link" onclick="toggleFat()">'+t.fatLink+'</span>';
+    h+='<div class="fat-info" id="fatInfo">'+t.fatInfo+'</div>';
   }
+  document.getElementById('questionBlock').innerHTML=h;
+  upd();
+}
 
-  function addTyping() {
-    const wrap = document.createElement('div');
-    wrap.id = 'typing';
-    wrap.className = 'msg ai';
-    wrap.innerHTML = '<div class="avatar ai">IM</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
-    msgs.appendChild(wrap);
-    msgs.scrollTop = msgs.scrollHeight;
-  }
+function toggleFat(){
+  var fi=document.getElementById('fatInfo');
+  if(!fi) return;
+  fi.classList.toggle('show');
+  if(fi.classList.contains('show')&&!ans.fat){ ans.fat='?'; upd(); }
+}
 
-  async function selectLang(langName) {
-    document.getElementById('langScreen').style.display = 'none';
-    const chat = document.getElementById('chatScreen');
-    chat.style.display = 'flex';
-    showSuggestions(langName);
+function pick(key,val,el){
+  ans[key]=val;
+  document.querySelectorAll('.opt-btn').forEach(function(b){b.classList.remove('selected');});
+  el.classList.add('selected');
+  upd();
+  setTimeout(nextStep,280);
+}
 
-    const greeting = 'User selected language: ' + langName + '. Greet them warmly in ' + langName + ' and start collecting their fitness info. First ask their age and gender.';
-    history.push({ role: 'user', content: greeting });
-    addTyping();
+function upd(){
+  var s=tr().steps[step], ok=false;
+  if(s.type==='opts') ok=!!ans[s.key];
+  else if(s.type==='num') ok=!!ans[s.key];
+  else if(s.type==='dbl') ok=!!ans.w&&!!ans.h;
+  else if(s.type==='fat') ok=!!ans.fat;
+  document.getElementById('nextBtn').disabled=!ok;
+}
 
-    try {
-      const res = await fetch('/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history })
-      });
-      const data = await res.json();
-      document.getElementById('typing').remove();
-      addMsg('ai', data.reply);
-      history.push({ role: 'assistant', content: data.reply });
-    } catch(e) {
-      document.getElementById('typing').remove();
-      addMsg('ai', 'Connection error. Please try again.');
-    }
-  }
+function nextStep(){
+  if(step<tr().steps.length-1){step++;render();}
+  else startChat();
+}
 
-  async function send() {
-    const text = inp.value.trim();
-    if (!text) return;
-    inp.value = '';
-    btn.disabled = true;
-    document.getElementById('sugs').innerHTML = '';
-    addMsg('user', text);
-    history.push({ role: 'user', content: text });
-    addTyping();
+function prevStep(){ if(step>0){step--;render();} }
 
-    try {
-      const res = await fetch('/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history })
-      });
-      const data = await res.json();
-      document.getElementById('typing').remove();
-      addMsg('ai', data.reply);
-      history.push({ role: 'assistant', content: data.reply });
-    } catch(e) {
-      document.getElementById('typing').remove();
-      addMsg('ai', 'Connection error. Please try again.');
-    }
-    btn.disabled = false;
-    inp.focus();
-  }
+function startChat(){
+  document.getElementById('quizScreen').classList.remove('active');
+  document.getElementById('chatScreen').classList.add('active');
+  var sd=document.getElementById('sugs');
+  sd.innerHTML='';
+  tr().sugs.forEach(function(s){
+    var b=document.createElement('button');
+    b.className='sug'; b.textContent=s;
+    b.onclick=function(){sd.innerHTML='';document.getElementById('inp').value=s;send();};
+    sd.appendChild(b);
+  });
+  var fat=ans.fat==='?'?'unknown':ans.fat+'%';
+  var profile='Language: '+lang+'. Profile: Gender='+ans.gender+', Age='+ans.age+', Weight='+ans.w+'kg, Height='+ans.h+'cm, Body fat='+fat+', Goal='+ans.goal+', Experience='+ans.exp+'. Greet in '+lang+' and give a specific science-based training and nutrition plan immediately. Be direct and practical like a real trainer.';
+  hist.push({role:'user',content:profile});
+  addTyping();
+  callAPI();
+}
+
+function callAPI(){
+  fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:hist})})
+  .then(function(r){return r.json();}).then(function(d){
+    var t=document.getElementById('typing'); if(t)t.remove();
+    addMsg('ai',d.reply||'Error');
+    hist.push({role:'assistant',content:d.reply});
+  }).catch(function(){
+    var t=document.getElementById('typing'); if(t)t.remove();
+    addMsg('ai','Connection error.');
+  });
+}
+
+function addMsg(role,text){
+  var w=document.createElement('div');
+  w.className='msg '+role;
+  w.innerHTML='<div class="avatar '+role+'">'+(role==='ai'?'IM':'YOU')+'</div><div class="bubble">'+text+'</div>';
+  document.getElementById('msgs').appendChild(w);
+  document.getElementById('msgs').scrollTop=99999;
+}
+
+function addTyping(){
+  var w=document.createElement('div');
+  w.id='typing'; w.className='msg ai';
+  w.innerHTML='<div class="avatar ai">IM</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+  document.getElementById('msgs').appendChild(w);
+  document.getElementById('msgs').scrollTop=99999;
+}
+
+function send(){
+  var inp=document.getElementById('inp'), text=inp.value.trim();
+  if(!text) return;
+  inp.value='';
+  document.getElementById('sendBtn').disabled=true;
+  document.getElementById('sugs').innerHTML='';
+  addMsg('user',text);
+  hist.push({role:'user',content:text});
+  addTyping();
+  fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:hist})})
+  .then(function(r){return r.json();}).then(function(d){
+    var t=document.getElementById('typing'); if(t)t.remove();
+    addMsg('ai',d.reply||'Error');
+    hist.push({role:'assistant',content:d.reply});
+  }).catch(function(){
+    var t=document.getElementById('typing'); if(t)t.remove();
+    addMsg('ai','Connection error.');
+  }).finally(function(){
+    document.getElementById('sendBtn').disabled=false;
+    document.getElementById('inp').focus();
+  });
+}
 </script>
 </body>
 </html>
